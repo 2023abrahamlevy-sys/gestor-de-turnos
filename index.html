@@ -1,125 +1,160 @@
-<!-- Encabezado Principal -->
-<header class="encabezado">
-    <div class="contenedor-header">
-        <div class="logo-titulo">
-            <div class="icono-medico">⚕</div>
-            <div>
-                <h1>MediTurnos</h1>
-                <p>Gestión Inteligente de Consultorios</p>
-            </div>
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MediTurnos | Gestión de turnos</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#">
+      <span class="brand-mark">+</span>
+      <span>
+        <strong>MediTurnos</strong>
+        <small>Gestión de consultorios</small>
+      </span>
+    </a>
+    <span class="header-label">● Sistema de turnos</span>
+  </header>
+
+  <main class="container">
+    <section class="intro">
+      <div>
+        <p class="eyebrow">ORGANIZACIÓN Y ATENCIÓN</p>
+        <h1>Gestioná tus turnos</h1>
+        <p class="intro-text">Asigná citas y mantené todo organizado en un solo lugar.</p>
+      </div>
+      <div class="date-chip">
+        <span>HOY</span>
+        <strong id="todayLabel"></strong>
+      </div>
+    </section>
+
+    <section class="stats">
+      <article class="stat-card">
+        <span class="stat-icon blue">▦</span>
+        <div><p>Turnos totales</p><strong id="totalCount">0</strong></div>
+      </article>
+      <article class="stat-card">
+        <span class="stat-icon green">✓</span>
+        <div><p>Turnos de hoy</p><strong id="todayCount">0</strong></div>
+      </article>
+      <article class="stat-card">
+        <span class="stat-icon purple">◷</span>
+        <div><p>Especialidades</p><strong id="specialtyCount">0</strong></div>
+      </article>
+    </section>
+
+    <div class="layout">
+      <section class="panel">
+        <div class="panel-heading">
+          <div>
+            <span class="step-label">NUEVA RESERVA</span>
+            <h2>Asignar un turno</h2>
+          </div>
+          <span class="heading-icon">＋</span>
         </div>
-        <div class="indicador-horario">
-            <span class="punto-activo"></span>
-            <span>Atención: <b>08:00 - 18:00 hs</b> (Intervalos de 30 min)</span>
+
+        <form id="appointmentForm">
+          <label for="patientName">Nombre del paciente *</label>
+          <input id="patientName" type="text" placeholder="Ej. Martina Pérez" maxlength="80" required>
+
+          <label for="specialty">Especialidad *</label>
+          <select id="specialty" required>
+            <option value="">Seleccioná una especialidad</option>
+            <option>Clínica médica</option>
+            <option>Cardiología</option>
+            <option>Dermatología</option>
+            <option>Traumatología</option>
+            <option>Pediatría</option>
+            <option>Oftalmología</option>
+            <option>Odontología</option>
+            <option>Psicología</option>
+          </select>
+
+          <label for="appointmentDate">Fecha del turno *</label>
+          <input id="appointmentDate" type="date" required>
+
+          <label for="appointmentTime">Horario disponible *</label>
+          <select id="appointmentTime" required disabled>
+            <option value="">Primero elegí una fecha</option>
+          </select>
+          <p class="field-help">Atención de 08:00 a 18:00, cada 30 minutos.</p>
+
+          <label for="notes">Notas (opcional)</label>
+          <textarea id="notes" rows="2" maxlength="250" placeholder="Información adicional"></textarea>
+
+          <div id="formMessage" class="message" role="status"></div>
+          <button class="primary-button" type="submit">＋ Guardar turno</button>
+          <p class="privacy-note">Los turnos se guardan en este navegador.</p>
+        </form>
+      </section>
+
+      <section class="panel agenda-panel">
+        <div class="agenda-heading">
+          <div>
+            <span class="step-label">PLANIFICACIÓN</span>
+            <h2>Agenda de turnos</h2>
+          </div>
+          <span class="agenda-total" id="agendaTotal">0 turnos</span>
         </div>
+
+        <div class="agenda-tools">
+          <input id="searchInput" type="search" placeholder="Buscar paciente...">
+          <input id="filterDate" type="date" aria-label="Filtrar por fecha">
+          <button id="clearFilter" class="secondary-button" type="button">Ver todos</button>
+        </div>
+
+        <div id="appointmentList" class="appointment-list"></div>
+        <div id="emptyState" class="empty-state">
+          <div class="empty-icon">▦</div>
+          <h3>Todavía no hay turnos</h3>
+          <p>Cuando guardes un turno, va a aparecer acá.</p>
+        </div>
+      </section>
     </div>
-</header>
+    <p class="footer-note">MediTurnos · Gestión de citas</p>
+  </main>
 
-<!-- Contenedor Principal -->
-<main class="contenedor-principal">
-    
-    <!-- Mensaje de Notificación -->
-    <div id="notificacion" class="notificacion oculta">
-        <span id="notificacion-mensaje"></span>
-        <button onclick="ocultarNotificacion()" class="btn-cerrar-notificacion">✕</button>
-    </div>
+  <dialog id="editDialog" class="edit-dialog">
+    <form id="editForm">
+      <div class="panel-heading">
+        <h2>Editar turno</h2>
+        <button type="button" id="closeEdit" class="secondary-button">Cerrar</button>
+      </div>
 
-    <div class="rejilla-contenido">
-        
-        <!-- SECCIÓN IZQUIERDA: FORMULARIO DE REGISTRO -->
-        <section class="tarjeta seccion-formulario">
-            <div class="cabecera-seccion">
-                <h2>📝 Registrar Nuevo Turno</h2>
-                <p>Ingrese los datos para agendar una cita en el consultorio.</p>
-            </div>
+      <input id="editId" type="hidden">
 
-            <form id="formulario-turno" onsubmit="procesarFormulario(event)">
-                
-                <!-- Nombre del Paciente -->
-                <div class="grupo-campo">
-                    <label for="nombre-paciente">Nombre del Paciente <span class="requerido">*</span></label>
-                    <input 
-                        type="text" 
-                        id="nombre-paciente" 
-                        required 
-                        placeholder="Ej. Pepe García" 
-                        autocomplete="off"
-                    >
-                </div>
+      <label for="editName">Nombre del paciente *</label>
+      <input id="editName" required maxlength="80">
 
-                <!-- Fila de Fecha y Horario -->
-                <div class="fila-campos">
-                    <!-- Selector de Fecha -->
-                    <div class="grupo-campo">
-                        <label for="fecha-turno">Día <span class="requerido">*</span></label>
-                        <input 
-                            type="date" 
-                            id="fecha-turno" 
-                            required 
-                            onchange="actualizarEstadoHorarios()"
-                        >
-                    </div>
+      <label for="editSpecialty">Especialidad *</label>
+      <select id="editSpecialty" required>
+        <option>Clínica médica</option>
+        <option>Cardiología</option>
+        <option>Dermatología</option>
+        <option>Traumatología</option>
+        <option>Pediatría</option>
+        <option>Oftalmología</option>
+        <option>Odontología</option>
+        <option>Psicología</option>
+      </select>
 
-                    <!-- Selector de Horario -->
-                    <div class="grupo-campo">
-                        <label for="horario-turno">Horario <span class="requerido">*</span></label>
-                        <select id="horario-turno" required>
-                            <option value="">Seleccionar horario</option>
-                        </select>
-                    </div>
-                </div>
+      <label for="editDate">Fecha *</label>
+      <input id="editDate" type="date" required>
 
-                <!-- Selector de Especialidad -->
-                <div class="grupo-campo">
-                    <label for="especialidad">Especialidad <span class="requerido">*</span></label>
-                    <select id="especialidad" required onchange="actualizarEstadoHorarios()">
-                        <option value="">Seleccionar especialidad</option>
-                        <option value="Cardiología">🫀 Cardiología</option>
-                        <option value="Pediatría">👶 Pediatría</option>
-                        <option value="Dermatología">🩺 Dermatología</option>
-                        <option value="Medicina General">👨‍⚕️ Medicina General</option>
-                        <option value="Traumatología">🦴 Traumatología</option>
-                        <option value="Oftalmología">👁️ Oftalmología</option>
-                        <option value="Odontología">🦷 Odontología</option>
-                    </select>
-                </div>
+      <label for="editTime">Horario *</label>
+      <select id="editTime" required></select>
 
-                <!-- Alerta de Horario Ocupado -->
-                <div id="alerta-conflicto" class="alerta-conflicto oculta">
-                    ⚠️ <strong>Horario Ocupado:</strong> Ya existe un turno agendado para esta fecha y hora. Por favor, seleccione otro.
-                </div>
+      <label for="editNotes">Notas</label>
+      <textarea id="editNotes" rows="2" maxlength="250"></textarea>
 
-                <!-- Botón de Envío -->
-                <button type="submit" id="btn-cargar" class="btn-principal">
-                    <span>Cargar turno</span>
-                    <span>➔</span>
-                </button>
-            </form>
-        </section>
-
-        <!-- SECCIÓN DERECHA: PANEL DE TURNOS AGENDADOS -->
-        <section class="tarjeta seccion-agenda">
-            <div class="cabecera-seccion flex-espaciado">
-                <div>
-                    <h2>📋 Agenda de Turnos</h2>
-                    <p>Listado de citas ordenadas cronológicamente.</p>
-                </div>
-                <span id="contador-turnos" class="contador-badge">0 Turnos</span>
-            </div>
-
-            <!-- Lista de Turnos Agendados -->
-            <div id="contenedor-turnos" class="lista-turnos">
-                <!-- Se renderiza dinámicamente desde script.js -->
-            </div>
-        </section>
-
-    </div>
-</main>
-
-<!-- Pie de Página -->
-<footer class="pie-pagina">
-    <p>Sistema de Gestión de Turnos Médicos &copy; <span id="anio-actual"></span> - Todos los derechos reservados</p>
-</footer>
-
-<!-- Script principal JS -->
-<script src="script.js"></script>
+      <div id="editMessage" class="message" role="status"></div>
+      <button class="primary-button" type="submit">Guardar cambios</button>
+    </form>
+  </dialog>
+</body>
+</html>
